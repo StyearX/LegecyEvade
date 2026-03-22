@@ -1,0 +1,709 @@
+local v_u_1 = {}
+v_u_1.__index = v_u_1
+require(script:WaitForChild("Velocity"))
+function v_u_1.Init(p_u_2)
+	-- upvalues: (copy) v_u_1
+	local v3 = Instance.new("LinearVelocity", p_u_2.HumanoidRootPart)
+	v3.MaxForce = 100000
+	v3.VelocityConstraintMode = Enum.VelocityConstraintMode.Plane
+	v3.PrimaryTangentAxis = Vector3.new(1, 0, 0)
+	v3.SecondaryTangentAxis = Vector3.new(0, 0, 1)
+	v3.Attachment0 = Instance.new("Attachment", p_u_2.HumanoidRootPart)
+	script.Parent.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Swimming, false)
+	script.Parent.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+	script.Parent.Humanoid:SetStateEnabled(Enum.HumanoidStateType.GettingUp, false)
+	local v4 = {
+		["a"] = false,
+		["b"] = require(game.Players.LocalPlayer:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule"):WaitForChild("ControlModule")),
+		["c"] = 1,
+		["j"] = 1,
+		["k"] = 0,
+		["m"] = 0,
+		["i"] = 0,
+		["h"] = v3,
+		["Character"] = p_u_2,
+		["e"] = Vector3.new(),
+		["d"] = Vector3.new(),
+		["l"] = true,
+		["f"] = {
+			["a"] = 0,
+			["b"] = 0,
+			["c"] = 0,
+			["d"] = 0,
+			["e"] = 0
+		},
+		["g"] = {
+			["a"] = false,
+			["b"] = true,
+			["c"] = 0.1,
+			["d"] = false,
+			["e"] = false
+		},
+		["z"] = nil,
+		["highlight"] = script:WaitForChild("Highlight")
+	}
+	local v5 = v_u_1
+	local v_u_6 = setmetatable(v4, v5)
+	local v_u_7 = false
+	p_u_2:WaitForChild("Humanoid"):GetPropertyChangedSignal("Jump"):Connect(function() end)
+	p_u_2:GetAttributeChangedSignal("JumpingEnabled"):Connect(function()
+		-- upvalues: (copy) p_u_2
+		p_u_2.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, p_u_2:GetAttribute("JumpingEnabled"))
+	end)
+	game:GetService("UserInputService").JumpRequest:Connect(function()
+		-- upvalues: (copy) p_u_2, (copy) v_u_6, (ref) v_u_7
+		if p_u_2.Humanoid.JumpHeight ~= 0 and v_u_6.l == true then
+			v_u_7 = true
+			if v_u_6.a == true and (p_u_2:GetAttribute("JumpingEnabled") ~= false and (p_u_2:GetAttribute("Crouching") ~= true and (p_u_2:GetAttribute("Nextbot") == nil or game.Players.LocalPlayer.Character:GetAttribute("PlayerNextbot") ~= nil))) and v_u_6.d ~= Vector3.new() then
+				local v8 = 1.45 * v_u_6.Character.HumanoidRootPart.CFrame.lookVector:Dot(v_u_6.d.unit) ^ 2
+				local v9 = v_u_6.d.Magnitude
+				if v9 < v_u_6.j * v_u_6.c * v8 then
+					local v10 = v9 * 1.5
+					local v11 = v_u_6.j * v_u_6.c * v8
+					local v12 = math.min(v10, v11)
+					v_u_6.d = (v_u_6.d * Vector3.new(1, 0, 1)).unit * v12
+				end
+			end
+			game:GetService("RunService").Heartbeat:wait()
+			p_u_2.Humanoid.JumpHeight = 0
+			if game.Players.LocalPlayer:GetAttribute("OnXbox") ~= true then
+				repeat
+					game:GetService("RunService").Heartbeat:wait()
+				until v_u_7 == false
+			end
+			p_u_2.Humanoid.JumpHeight = p_u_2.Humanoid:GetAttribute("RealJumpHeight")
+		end
+	end)
+	game:GetService("UserInputService").InputEnded:connect(function(p13)
+		-- upvalues: (ref) v_u_7
+		if p13.KeyCode == Enum.KeyCode.Space or p13.KeyCode == Enum.KeyCode.ButtonB then
+			v_u_7 = false
+		end
+	end)
+	script:WaitForChild("JumpEnded").Event:Connect(function()
+		-- upvalues: (ref) v_u_7
+		v_u_7 = false
+	end)
+	script:WaitForChild("Push").Event:Connect(function(p14)
+		-- upvalues: (copy) v_u_6
+		local v15 = v_u_6
+		v15.d = v15.d * 0.2
+		v_u_6:Push(p14)
+	end)
+	v_u_6.Character.Humanoid:GetAttributeChangedSignal("RealJumpHeight"):Connect(function()
+		-- upvalues: (copy) v_u_6, (copy) p_u_2
+		v_u_6.Character.Humanoid.JumpHeight = p_u_2.Humanoid:GetAttribute("RealJumpHeight")
+		if v_u_6.x ~= nil and v_u_6.x ~= p_u_2.Humanoid:GetAttribute("RealJumpHeight") then
+			v_u_6.Character.Humanoid.JumpHeight = v_u_6.x
+		end
+	end)
+	return v_u_6
+end
+function v_u_1.Disable(p16)
+	p16.l = false
+	p16.h.MaxForce = 0
+	p16.h.Enabled = false
+	p16.Character.Humanoid.JumpHeight = 0
+end
+function v_u_1.Enable(p17)
+	p17.l = true
+	p17.h.Enabled = true
+	p17.h.MaxForce = 1500000
+	p17.Character.Humanoid.JumpHeight = p17.Character.Humanoid:GetAttribute("RealJumpHeight")
+end
+function GetAngle(p18, p19)
+	local v20 = p18:Cross(p19).Magnitude
+	local v21 = p18:Dot(p19)
+	return math.atan2(v20, v21)
+end
+function lerp(p22, p23, p24)
+	return p22 + (p23 - p22) * p24
+end
+function v_u_1.Update(p_u_25, p26)
+	if p_u_25.Character == nil or (p_u_25.Character.Parent == nil or (p_u_25.Character.PrimaryPart == nil or (p_u_25.Character:FindFirstChild("HumanoidRootPart") == nil or p_u_25.Character:FindFirstChild("Humanoid") == nil))) then
+		return
+	else
+		local v27 = false
+		if p_u_25.l == true then
+			if script.Parent:FindFirstChild("Weapon") == nil or (script.Parent.Weapon:FindFirstChild("Handle") == nil or (script.Parent.Weapon.Handle:FindFirstChild("Spark") == nil or (script.Parent:FindFirstChild("SpringConstraint") == nil or (script.Parent.SpringConstraint.Enabled ~= true or (script.Parent.SpringConstraint.Attachment1 == nil or (script.Parent.SpringConstraint.Attachment1.Parent == nil or script.Parent.SpringConstraint.Attachment1.Parent.Parent:GetAttribute("Waiting") ~= true)))))) then
+				if p_u_25.h.MaxForce == 0 then
+					p_u_25.h.PlaneVelocity = Vector2.new(p_u_25.Character.PrimaryPart.AssemblyLinearVelocity.X, p_u_25.Character.PrimaryPart.AssemblyLinearVelocity.Z)
+					local v28 = p_u_25.Character.PrimaryPart.AssemblyLinearVelocity.X
+					local v29 = p_u_25.Character.PrimaryPart.AssemblyLinearVelocity.Z
+					p_u_25.d = Vector3.new(v28, 0, v29) * 90
+				end
+				p_u_25.h.Enabled = true
+				p_u_25.h.MaxForce = 1500000
+				if p_u_25.Character.Humanoid.Health > 0 then
+					if p_u_25.Character:FindFirstChild("HumanoidRootPart") == nil or p_u_25.Character.HumanoidRootPart:FindFirstChild("SeatWLD") == nil then
+						p_u_25.Character.Humanoid.PlatformStand = false
+					else
+						p_u_25.Character.Humanoid.PlatformStand = true
+					end
+				end
+			else
+				p_u_25.h.MaxForce = 0
+				p_u_25.h.Enabled = false
+				p_u_25.Character.Humanoid.PlatformStand = true
+				p_u_25.h.PlaneVelocity = Vector2.new()
+				v27 = true
+			end
+		elseif p_u_25.Character.Humanoid.Health > 0 then
+			if p_u_25.Character:FindFirstChild("HumanoidRootPart") == nil or p_u_25.Character.HumanoidRootPart:FindFirstChild("SeatWLD") == nil then
+				p_u_25.Character.Humanoid.PlatformStand = false
+			else
+				p_u_25.Character.Humanoid.PlatformStand = true
+			end
+		end
+		if script.Parent:GetAttribute("Crouching") == false then
+			script.Parent.StatChanges.Speed.Crouch.Value = 1
+		end
+		if script.Parent:GetAttribute("Downed") == true then
+			script.Parent.StatChanges.Speed.Crouch.Value = 1
+			if script.Parent.StatChanges.Speed:FindFirstChild("EmoteSpeed") ~= nil then
+				script.Parent.StatChanges.Speed.EmoteSpeed.Value = 1
+			end
+		end
+		for _, v30 in pairs(p_u_25.Character.StatChanges.Speed:GetChildren()) do
+			if v30.Name == "Crouch" and (v30.Value ~= 1 and v30.Value ~= 0.6) then
+				v30.Value = 1
+			end
+		end
+		if p_u_25.Character:GetAttribute("Nextbot") == nil or game.Players.LocalPlayer.Character:GetAttribute("PlayerNextbot") ~= nil then
+			p_u_25.z = nil
+			p_u_25.highlight.Parent = script
+			p_u_25.highlight.Adornee = nil
+			p_u_25.highlight.Enabled = false
+		else
+			p_u_25.z = 1
+			p_u_25.highlight.Adornee = workspace.Game.Players
+			p_u_25.highlight.Parent = script.Parent
+			if p_u_25.ag == nil or tick() - p_u_25.ag <= 0.5 then
+				if p_u_25.ag == nil then
+					p_u_25.ag = tick()
+				end
+				p_u_25.highlight.Adornee = nil
+				p_u_25.highlight.Enabled = true
+			else
+				p_u_25.highlight.Enabled = true
+			end
+		end
+		local v31 = false
+		if tick() - p_u_25.k >= 0.1 then
+			p_u_25.k = tick()
+			spawn(function()
+				-- upvalues: (copy) p_u_25
+				local v32 = p_u_25.f.b
+				local v33 = p_u_25.f.a
+				local v34 = Vector3.new(v32, 0, v33)
+				local v35 = workspace.CurrentCamera.CFrame.lookVector.Y
+				local v36 = math.asin(v35)
+				local v37 = p_u_25.Character.PrimaryPart.CFrame.lookVector:Cross(workspace.CurrentCamera.CFrame.lookVector).Y
+				local v38 = math.sign(v37)
+				local v39 = 1 + GetAngle(p_u_25.Character.PrimaryPart.CFrame.lookVector, (game.Players.LocalPlayer.PlayerScripts.CameraCFrame.Value.lookVector * Vector3.new(1, 0, 1)).unit) * (v38 / 3.141592653589793)
+				if v34 == Vector3.new() then
+					p_u_25.Character:SetAttribute("MoveDirection", (Vector3.new()))
+					p_u_25.Character:SetAttribute("LookY", v36)
+					p_u_25.Character:SetAttribute("Gyro", v39)
+					local v40, v41 = script.Parent.Communicator:InvokeServer("update", v36, Vector3.new(), v39, p_u_25.Character:GetAttribute("CurrentMoveSpeed"))
+					if v40 ~= script.Parent.Humanoid:GetAttribute("RealSpeed") then
+						script.Parent.Humanoid:SetAttribute("RealSpeed", v40)
+						p_u_25.q = v40
+					end
+					if v41 ~= script.Parent.Humanoid:GetAttribute("RealJumpHeight") then
+						script.Parent.Humanoid:SetAttribute("RealJumpHeight", v41)
+						p_u_25.x = v41
+					end
+				else
+					p_u_25.Character:SetAttribute("MoveDirection", v34.unit)
+					p_u_25.Character:SetAttribute("LookY", v36)
+					p_u_25.Character:SetAttribute("Gyro", v39)
+					local v42, v43 = script.Parent.Communicator:InvokeServer("update", v36, v34.unit, v39, p_u_25.Character:GetAttribute("CurrentMoveSpeed"))
+					if v42 ~= script.Parent.Humanoid:GetAttribute("RealSpeed") then
+						script.Parent.Humanoid:SetAttribute("RealSpeed", v42)
+						p_u_25.q = v42
+					end
+					if v43 ~= script.Parent.Humanoid:GetAttribute("RealJumpHeight") then
+						script.Parent.Humanoid:SetAttribute("RealJumpHeight", v43)
+						p_u_25.x = v43
+						return
+					end
+				end
+			end)
+		end
+		if v27 == true then
+			local _ = script.Parent.SpringConstraint.Attachment1.WorldPosition
+		end
+		if p_u_25.l == false or v27 == true then
+			local v_u_44 = p_u_25.a
+			p_u_25.a = p_u_25:CheckGrounded()
+			p_u_25.Character:SetAttribute("Grounded", p_u_25.a)
+			local v45 = p_u_25.Character:GetAttribute("Crouching") == true and p_u_25.d.magnitude >= 1900 and true or v31
+			p_u_25.Sliding = v45
+			if p_u_25.a == true then
+				task.spawn(function()
+					-- upvalues: (copy) p_u_25, (copy) v_u_44
+					if p_u_25.a ~= v_u_44 then
+						script.Parent.Communicator:InvokeServer("JumpDone")
+					end
+				end)
+				if v45 == true then
+					p_u_25:SlideMove(p26)
+				else
+					p_u_25:GroundMove(p26)
+				end
+			else
+				task.spawn(function()
+					-- upvalues: (copy) p_u_25, (copy) v_u_44
+					if p_u_25.a ~= v_u_44 then
+						script.Parent.Communicator:InvokeServer("Jump")
+					end
+				end)
+				if p_u_25.f.a < 0 then
+					p_u_25.f.a = 0
+				end
+				game.Players.LocalPlayer.PlayerGui.HUD.Center.Emote.Visible = false
+				p_u_25:AirMove()
+				return
+			end
+		else
+			p_u_25.h.MaxForce = 100000
+			local _, v46, _ = game.Players.LocalPlayer.PlayerScripts.CameraCFrame.Value:ToOrientation()
+			p_u_25.i = p26
+			local v47 = p_u_25.b:GetMoveVector()
+			if v47 ~= Vector3.new() then
+				v47 = v47.unit
+			end
+			p_u_25.f.b = v47.X
+			p_u_25.f.a = v47.Z
+			p_u_25:QueueJump()
+			local v_u_48 = p_u_25.a
+			p_u_25.a = p_u_25:CheckGrounded()
+			p_u_25.Character:SetAttribute("Grounded", p_u_25.a)
+			local v49 = 0
+			local v50 = p_u_25.Character:GetAttribute("Crouching") == true and p_u_25.d.magnitude >= 1900 and true or v31
+			p_u_25.Sliding = v50
+			if p_u_25.a == true then
+				task.spawn(function()
+					-- upvalues: (copy) p_u_25, (copy) v_u_48
+					if p_u_25.a ~= v_u_48 then
+						script.Parent.Communicator:InvokeServer("JumpDone")
+					end
+				end)
+				if v50 == true then
+					p_u_25:SlideMove(p26)
+				else
+					v49 = p_u_25:GroundMove(p26)
+				end
+			else
+				task.spawn(function()
+					-- upvalues: (copy) p_u_25, (copy) v_u_48
+					if p_u_25.a ~= v_u_48 then
+						script.Parent.Communicator:InvokeServer("Jump")
+					end
+				end)
+				if p_u_25.f.a < 0 then
+					p_u_25.f.a = 0
+				end
+				game.Players.LocalPlayer.PlayerGui.HUD.Center.Emote.Visible = false
+				p_u_25:AirMove()
+				v49 = 0
+			end
+			p_u_25.m = lerp(p_u_25.m, v49, 0.5)
+			local v51 = p_u_25.f.b
+			local v52 = p_u_25.f.a
+			local v53 = Vector3.new(v51, 0, v52)
+			local v54 = game.Players.LocalPlayer.PlayerScripts.CameraCFrame.Value:VectorToWorldSpace(v53)
+			local v55 = v54.X
+			local v56 = v54.Z
+			local v57 = Vector3.new(v55, 0, v56)
+			if v57 ~= Vector3.new() then
+				p_u_25.e = v57
+			end
+			if p_u_25.Character.StatChanges.Speed:FindFirstChild("EmoteSpeed") == nil and p_u_25.Character:GetAttribute("Downed") ~= true then
+				if v50 == false then
+					script.Parent.HumanoidRootPart.CFrame = CFrame.new(script.Parent.HumanoidRootPart.CFrame.p) * CFrame.Angles(0, v46 + p_u_25.m, 0)
+				elseif (p_u_25.d * Vector3.new(1, 0, 1)).magnitude > 0 then
+					script.Parent.HumanoidRootPart.CFrame = CFrame.new(script.Parent.HumanoidRootPart.CFrame.p, script.Parent.HumanoidRootPart.CFrame.p + p_u_25.d * Vector3.new(1, 0, 1))
+				else
+					script.Parent.HumanoidRootPart.CFrame = CFrame.new(script.Parent.HumanoidRootPart.CFrame.p) * CFrame.Angles(0, v46 + p_u_25.m, 0)
+				end
+			elseif p_u_25.e ~= Vector3.new() and p_u_25.e.unit ~= Vector3.new() then
+				local v58 = (script.Parent.HumanoidRootPart.CFrame - script.Parent.HumanoidRootPart.CFrame.p):lerp(CFrame.new(Vector3.new(), p_u_25.e.unit), 0.1)
+				script.Parent.HumanoidRootPart.CFrame = CFrame.new(script.Parent.HumanoidRootPart.CFrame.p) * (v58 - v58.p)
+			end
+			if p_u_25.q ~= nil and p_u_25.Character.Humanoid:GetAttribute("RealSpeed") > p_u_25.q then
+				p_u_25.Character.Humanoid:SetAttribute("RealSpeed", p_u_25.q)
+			end
+			p_u_25.j = p_u_25.Character.Humanoid:GetAttribute("RealSpeed")
+			local v59 = 1
+			for _, v60 in pairs(p_u_25.Character.StatChanges.Speed:GetChildren()) do
+				local v61 = v59 + v60.Value - 1
+				v59 = math.clamp(v61, 0, 2.5)
+			end
+			if p_u_25.Character:GetAttribute("Zombie") == true then
+				v59 = v59 * 1.3
+			elseif p_u_25.Character:GetAttribute("Nextbot") == nil or p_u_25.Character:GetAttribute("Nextbot") ~= "Angry Munci" and (p_u_25.Character:GetAttribute("Nextbot") ~= "Super Munci" and p_u_25.Character:GetAttribute("Nextbot") ~= "Happy") then
+				if p_u_25.Character:GetAttribute("Nextbot") ~= nil and game.Players.LocalPlayer.Character:GetAttribute("PlayerNextbot") == nil then
+					v59 = v59 * 2.1
+				end
+			else
+				v59 = v59 * 8
+			end
+			p_u_25.j = p_u_25.j * v59
+			local v62 = p_u_25.d * 1 / 90
+			local v63 = (v62 * Vector3.new(1, 0, 1)).magnitude
+			p_u_25.h.PlaneVelocity = Vector2.new(v62.X, v62.Z)
+			p_u_25.Character:SetAttribute("CurrentMoveSpeed", v63)
+			p_u_25.Character.Humanoid:SetAttribute("SprintMultiplier", p_u_25.c)
+			return
+		end
+	end
+end
+function v_u_1.QueueJump(p64)
+	if p64.g.d and (not p64.g.a and p64.g.e) then
+		p64.g.a = true
+		p64.g.e = false
+	end
+	if not p64.g.d then
+		p64.g.a = false
+	end
+end
+function v_u_1.CheckGrounded(p65)
+	local v66 = {
+		Vector3.new(),
+		Vector3.new(0.5, 0, 0),
+		Vector3.new(-0.5, 0, 0),
+		Vector3.new(0, 0, 0.5),
+		Vector3.new(0, 0, -0.5)
+	}
+	local v67 = false
+	for _, v68 in pairs(v66) do
+		if v67 == false then
+			local v69 = workspace
+			local v70 = Ray.new
+			local v71 = p65.Character.HumanoidRootPart.Position + v68 * p65.Character.HumanoidRootPart.Size.X
+			local v72 = (p65.Character:GetAttribute("Nextbot") == nil or game.Players.LocalPlayer.Character:GetAttribute("PlayerNextbot") ~= nil) and (script.Parent:GetAttribute("Emoting") == true and -3.4 or -2.9) or -3.5
+			local v73, _ = v69:FindPartOnRayWithIgnoreList(v70(v71, (Vector3.new(0, v72, 0))), { p65.Character, workspace.CurrentCamera, workspace.Game.Effects })
+			if v73 then
+				v67 = true
+			end
+		end
+	end
+	return v67
+end
+function v_u_1.GroundMove(p_u_74, p75)
+	local v76 = 0
+	if p_u_74.g.a or not p_u_74.g.b then
+		p_u_74:ApplyFriction(0)
+	else
+		p_u_74:ApplyFriction(1)
+	end
+	local v77 = game.Players.LocalPlayer.PlayerScripts.CameraCFrame.Value
+	local v78 = p_u_74.f.b
+	local v79 = p_u_74.f.a
+	local v80 = Vector3.new(v78, 0, v79)
+	local v81 = v77:VectorToWorldSpace(v80)
+	local v82 = v81.X
+	local v83 = v81.Z
+	local v84 = Vector3.new(v82, 0, v83)
+	if v84 == Vector3.new(0, 0, 0) then
+		p_u_74.c = 1
+	else
+		v84 = v84.Unit
+		if v80.Z < 0 and (p_u_74.Character:GetAttribute("Crouching") ~= true and (p_u_74.Character:GetAttribute("ADS") ~= true and (p_u_74.Character.StatChanges.Speed:FindFirstChild("EmoteSpeed") == nil and (p_u_74.Character:GetAttribute("Downed") ~= true and (workspace.Game.Stats:GetAttribute("SpecialRound") ~= "NoSprinting" and game.Players.LocalPlayer.Character:GetAttribute("PlayerNextbot") == nil))))) then
+			local v85 = v80.X
+			local v86 = math.abs(v85)
+			local v87 = v80.Z
+			if math.abs(v87) < v86 and p_u_74.Character:GetAttribute("CurrentMoveSpeed") >= 25 then
+				if v80.X < 0 then
+					v76 = -(v80.X - v80.Z)
+				else
+					local v88 = v80.X
+					local v89 = v80.Z
+					v76 = -(v88 - math.abs(v89))
+				end
+			end
+			local v90 = p_u_74.c + (p_u_74.Character:GetAttribute("Zombie") == true and 0.5 or (p_u_74.Character:GetAttribute("Skin") == "Hermes" and p_u_74.Character:GetAttribute("Nextbot") == nil and 1.8 or 1)) * 0.5 * p75
+			local v91 = p_u_74.z or 2
+			p_u_74.c = math.clamp(v90, 1, v91)
+		else
+			p_u_74.c = 1
+		end
+	end
+	p_u_74:Accelerate(v84, v84.Magnitude * (p_u_74.j * p_u_74.c), (p_u_74.Character:GetAttribute("Zombie") == true and 0.5 or ((p_u_74.Character:GetAttribute("Nextbot") == nil or game.Players.LocalPlayer.Character:GetAttribute("PlayerNextbot") ~= nil) and (p_u_74.Character:GetAttribute("Skin") == "Hermes" and p_u_74.Character:GetAttribute("Nextbot") == nil and 1.8 or 1) or 0.2)) * 12)
+	local v92 = p_u_74.d.X
+	local v93 = p_u_74.d.Z
+	p_u_74.d = Vector3.new(v92, 0, v93)
+	if p_u_74.g.a and p_u_74.g.b then
+		p_u_74.g.a = false
+		p_u_74.g.b = false
+		local v95 = coroutine.create(function()
+			-- upvalues: (copy) p_u_74
+			local v94 = tick()
+			while tick() - v94 < p_u_74.g.c do
+				wait()
+			end
+			p_u_74.g.b = true
+		end)
+		coroutine.resume(v95)
+	end
+	p_u_74:WallImpact(true)
+	return v76 * 0.2
+end
+function rotateVectorAround(p96, p97, p98)
+	return CFrame.fromAxisAngle(p98, p97):VectorToWorldSpace(p96)
+end
+function v_u_1.WallImpact(p99, _)
+	-- block 53
+	if p99.d == Vector3.new() then
+		::l2::
+		return
+	end
+	local v100 = {
+		-22,
+		-45,
+		0,
+		22,
+		45
+	}
+	local v101, v102, v103
+	-- NumForInit
+local v101, v102, v103 = 1, #v100, 1
+-- end NumForInit
+	local v104 = {}
+	::l12::
+	-- NumForNext
+v101 = v101 + v103;
+if v101 <= v102
+-- end NumForNext
+	::l3::
+	local v105 = {
+		p99.Character,
+		workspace.Game.Effects,
+		workspace.CurrentCamera,
+		workspace.Game.Players
+	}
+	while true do
+		local v106 = workspace
+		local v107 = Ray.new
+		local v108 = p99.Character.PrimaryPart.Position
+		local v109 = CFrame.new(Vector3.new(), p99.d)
+		local v110 = CFrame.Angles
+		local v111 = v100[v101]
+		local v112, _, v113 = v106:FindPartOnRayWithIgnoreList(v107(v108, (v109 * v110(0, math.rad(v111), 0)).lookVector * p99.Character.PrimaryPart.Size.X * 1.01), v105)
+		if v112 ~= nil then
+			table.insert(v105, v112)
+		end
+		if v112 == nil or v112.CanCollide == true then
+			if v113 ~= Vector3.new() then
+				local v114 = false
+				for _, v115 in pairs(v104) do
+					if v115 == v113 then
+						v114 = true
+					end
+				end
+				if p99.Sliding == true and v112:IsDescendantOf(workspace.Game.Map.Parts.Doors.Manual) then
+					local v116 = nil
+					if v112.Parent.Parent.Name == "Manual" then
+						v116 = v112.Parent
+					elseif v112.Parent.Parent.Parent.Name == "Manual" then
+						v116 = v112.Parent.Parent
+					elseif v112.Parent.Parent.Parent.Parent.Name == "Manual" then
+						v116 = v112.Parent.Parent.Parent
+					elseif v112.Parent.Parent.Parent.Parent.Parent.Name == "Manual" then
+						v116 = v112.Parent.Parent.Parent.Parent
+					end
+					if v116 == nil or v116:GetAttribute("Broken") ~= true then
+						if v116 ~= nil and (v116:GetAttribute("Breakable") == true and (v116:GetAttribute("FullyOpen") ~= true and p99.d.magnitude >= 2150)) then
+							game.ReplicatedStorage.Events.Map.BreakDoor:FireServer()
+							v114 = true
+						end
+					else
+						v114 = true
+					end
+				end
+				if v114 == false then
+					table.insert(v104, v113)
+				end
+			end
+			goto l12
+		end
+	end
+	::l4::
+	for _, v117 in pairs(v104) do
+		local v118 = v117.Z
+		local v119 = v117.X
+		local v120 = math.atan2(v118, v119)
+		local _ = p99.d.magnitude
+		local v121 = rotateVectorAround(p99.d, v120, Vector3.new(0, 1, 0)) * Vector3.new(0, 0, 1)
+		p99.d = rotateVectorAround(v121, -v120, Vector3.new(0, 1, 0))
+	end
+	if #v104 > 0 then
+		local v122 = p99.Character.Humanoid:GetAttribute("RealSpeed")
+		local v123 = 1
+		for _, v124 in pairs(p99.Character.StatChanges.Speed:GetChildren()) do
+			local v125 = v123 + v124.Value - 1
+			v123 = math.clamp(v125, 0, 2.5)
+		end
+		if p99.Character:GetAttribute("Zombie") == true then
+			v123 = v123 * 1.3
+		elseif p99.Character:GetAttribute("Nextbot") == nil or p99.Character:GetAttribute("Nextbot") ~= "Angry Munci" and (p99.Character:GetAttribute("Nextbot") ~= "Super Munci" and p99.Character:GetAttribute("Nextbot") ~= "Happy") then
+			if p99.Character:GetAttribute("Nextbot") ~= nil and game.Players.LocalPlayer.Character:GetAttribute("PlayerNextbot") == nil then
+				v123 = v123 * 2.1
+			end
+		else
+			v123 = v123 * 8
+		end
+		local v126 = v122 * v123
+		local v127 = p99.d.magnitude / (v126 * 2) * 2
+		local v128 = p99.z or 2
+		p99.c = math.clamp(v127, 1, v128)
+	end
+	goto l2
+	-- block 10
+	goto l4
+	-- block 12
+	goto l3
+end
+function v_u_1.AirMove(p129)
+	if p129.f.a ~= 0 then
+		p129:ApplyFriction(1)
+	end
+	local v130 = game.Players.LocalPlayer.PlayerScripts.CameraCFrame.Value
+	local v131 = p129.f.b
+	local v132 = p129.f.a
+	local v133 = v130:VectorToWorldSpace((Vector3.new(v131, 0, v132)))
+	local v134 = v133.X
+	local v135 = v133.Z
+	local v136 = Vector3.new(v134, 0, v135)
+	local v137 = v136.Magnitude * p129.j
+	if v136 ~= Vector3.new(0, 0, 0) then
+		v136 = v136.Unit
+	end
+	local v138 = p129.d:Dot(v136) < 0 and 2 or 4
+	local v139
+	if p129.f.a == 0 and p129.f.b ~= 0 then
+		v139 = v137 > 182 and 182 or v137
+		v138 = 182
+	else
+		v139 = v137
+	end
+	p129:Accelerate(v136, v139, v138)
+	p129:AirController(v136, v137)
+	p129:WallImpact()
+	local _ = p129.d.magnitude
+	local v140 = p129.Character.Humanoid:GetAttribute("RealSpeed")
+	local v141 = 1
+	for _, v142 in pairs(p129.Character.StatChanges.Speed:GetChildren()) do
+		local v143 = v141 + v142.Value - 1
+		v141 = math.clamp(v143, 0, 2.5)
+	end
+	if p129.Character:GetAttribute("Zombie") == true then
+		v141 = v141 * 1.3
+	elseif p129.Character:GetAttribute("Nextbot") == nil or p129.Character:GetAttribute("Nextbot") ~= "Angry Munci" and (p129.Character:GetAttribute("Nextbot") ~= "Super Munci" and p129.Character:GetAttribute("Nextbot") ~= "Happy") then
+		if p129.Character:GetAttribute("Nextbot") ~= nil and game.Players.LocalPlayer.Character:GetAttribute("PlayerNextbot") == nil then
+			v141 = v141 * 2.1
+		end
+	else
+		v141 = v141 * 8
+	end
+	local v144 = v140 * v141
+	local v145 = p129.d.magnitude / (v144 * 2) * 2
+	local v146 = p129.z or 2
+	p129.c = math.clamp(v145, 1, v146)
+end
+function v_u_1.AirController(p147, p148, p149, _)
+	local v150 = p147.f.a
+	if math.abs(v150) >= 0.001 and math.abs(p149) >= 0.001 then
+		local v151 = p147.d.magnitude
+		p147.d = p147.d.unit
+		local v152 = p147.d:Dot(p148)
+		local _ = 32 * (1 * v152 * v152 * p147.i)
+		p147.d = p147.d * Vector3.new(v151, 0, v151)
+	end
+end
+function v_u_1.ApplyFriction(p153, p154)
+	local v155 = p153.d.magnitude
+	local v156
+	if v155 < (p153.Character:GetAttribute("Skin") == "Hermes" and p153.Character:GetAttribute("Nextbot") == nil and 1.8 or 1) * 700 then
+		v156 = (p153.Character:GetAttribute("Skin") == "Hermes" and 1.6 or 1) * 700 or v155
+	else
+		v156 = v155
+	end
+	local v157 = v155 - v156 * ((p153.Character:GetAttribute("Nextbot") == nil or game.Players.LocalPlayer.Character:GetAttribute("PlayerNextbot") ~= nil) and 5 or 1) * p153.i * p154
+	local v158 = v157 < 0 and 0 or v157
+	if v155 > 0 then
+		v158 = v158 / v155
+	end
+	p153.d = p153.d * v158
+end
+function v_u_1.Accelerate(p159, p160, p161, p162)
+	local v163 = p161 - p159.d:Dot(p160)
+	if v163 > 0 then
+		local v164 = p162 * p159.i * p161
+		if v163 >= v164 then
+			v163 = v164
+		end
+		local v165 = p159.d.X + v163 * p160.X
+		local v166 = p159.d.Z + v163 * p160.Z
+		p159.d = Vector3.new(v165, 0, v166)
+	end
+end
+function v_u_1.Push(p167, p168)
+	p167.d = p167.d + p168 * Vector3.new(50, 0, 50)
+end
+function v_u_1.SlideMove(p169, p170)
+	p169.f.a = 0
+	p169:ApplyFriction(0.1)
+	local v171 = game.Players.LocalPlayer.PlayerScripts.CameraCFrame.Value
+	local v172 = p169.f.b
+	local v173 = p169.f.a
+	local v174 = v171:VectorToWorldSpace((Vector3.new(v172, 0, v173)))
+	local v175 = v174.X
+	local v176 = v174.Z
+	local v177 = Vector3.new(v175, 0, v176)
+	local v178 = v177.Magnitude * p169.d.magnitude
+	if v177 ~= Vector3.new(0, 0, 0) then
+		v177 = v177.Unit
+	end
+	local v179 = p169.d:Dot(v177) < 0 and 2 or 4
+	local v180
+	if p169.f.a == 0 and p169.f.b ~= 0 then
+		v180 = v178 > 182 and 182 or v178
+		v179 = 182
+	else
+		v180 = v178
+	end
+	p169:Accelerate(v177, v180, v179)
+	p169:AirController(v177, v178)
+	p169:WallImpact()
+	local _, _, v181 = workspace:FindPartOnRayWithWhitelist(Ray.new(p169.Character.PrimaryPart.Position, Vector3.new(0, -4, 0)), { workspace.Game.Map.Parts })
+	local v182 = p169.Character.PrimaryPart.CFrame:VectorToObjectSpace(v181)
+	local v183 = p169.d.unit
+	local v184 = p169.d.magnitude - v182.Z * p170 * 8000
+	p169.d = v183 * math.clamp(v184, 0, 5000)
+	local _ = p169.d.magnitude
+	local v185 = p169.Character.Humanoid:GetAttribute("RealSpeed")
+	local v186 = 1
+	for _, v187 in pairs(p169.Character.StatChanges.Speed:GetChildren()) do
+		if v187.Name ~= "Crouch" then
+			local v188 = v186 + v187.Value - 1
+			v186 = math.clamp(v188, 0, 2.5)
+		end
+	end
+	if p169.Character:GetAttribute("Zombie") == true then
+		v186 = v186 * 1.3
+	elseif p169.Character:GetAttribute("Nextbot") == nil or p169.Character:GetAttribute("Nextbot") ~= "Angry Munci" and (p169.Character:GetAttribute("Nextbot") ~= "Super Munci" and p169.Character:GetAttribute("Nextbot") ~= "Happy") then
+		if p169.Character:GetAttribute("Nextbot") ~= nil and game.Players.LocalPlayer.Character:GetAttribute("PlayerNextbot") == nil then
+			v186 = v186 * 2.1
+		end
+	else
+		v186 = v186 * 8
+	end
+	local v189 = v185 * v186
+	local v190 = p169.d.magnitude / (v189 * 2) * 2
+	local v191 = p169.z or 2
+	p169.c = math.clamp(v190, 1, v191)
+end
+return v_u_1
